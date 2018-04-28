@@ -1,0 +1,2329 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<link rel="shortcut icon" href="/static/favicon.ico">
+	<style type="text/css">
+		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#allmap{width:900px;height:540px;}
+		p{margin-left:5px; font-size:14px;}
+	</style>
+	<script type="text/javascript" src="js/7165de8433be4a26b5309104061809dd.js"></script>
+	<script type="text/javascript" src="js/texticonoverlay_min.js"></script>
+	<script type="text/javascript" src="js/markerclusterer_min.js"></script>
+	<script src="js/jquery-3.2.1.min.js"></script>
+	<title>订单轨迹</title>
+
+</head>
+<body>
+<form method="GET">单号:
+<input type="text" name="order_sn" value='1520602049761533'>
+<input type="submit">
+</form>
+<br>
+	&nbsp;&nbsp;&nbsp;
+	<label>
+		<input type="checkbox" name="disp_app" id="disp_app" checked onclick='show_hide_guiji();'>显示APP红色轨迹(紫色为拉直线,共<span id='n_app_zhixian'></span>处)</label>&nbsp;&nbsp;&nbsp;&nbsp;
+	<label>
+		<input type="checkbox" name="disp_pn" id="disp_pn" checked onclick='show_hide_guiji();'>显示车机蓝色轨迹(灰色为拉直线,共<span id='n_pn_zhixian'></span>处)</label>
+	&nbsp;&nbsp;&nbsp;&nbsp;<label><input type="checkbox" name="jiejue" id="jiejue" onclick='show_hide_guiji();'>处理拉直线</label>
+
+<table border="0">
+<tr>
+<td>
+	<div id="allmap"></div><img src='picture/play.png'><br>	↑↑↑轨迹回放控件为原型图，未写代码，暂无法操作
+	</td>
+	<td>
+	<table border="0">
+<tr>
+<td>
+订单基础信息:
+	</td>
+	<td>
+	订单编号、工程师、司机、地址、时间、高停等略
+	</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+	</td>
+	<td>
+	&nbsp;
+	</td>
+</tr>
+
+<tr>
+	<td>
+		此单开始时间：
+	</td>
+	<td>
+		2018-03-10 08:46:20
+	</td>
+</tr>
+<tr>
+	<td>
+		此单结束时间：
+	</td>
+	<td>
+		2018-03-10 19:17:44
+	</td>
+</tr>
+<tr>
+	<td>
+		此单鹰眼id：
+	</td>
+	<td>
+		8401520602049761533
+	</td>
+</tr>
+
+<tr>
+	<td>
+		此单车机PN：
+	</td>
+	<td>
+		668304050241271
+	</td>
+</tr>
+
+
+<tr>
+	<td>
+		此单存储里程：
+	</td>
+	<td>
+		223.35公里 和 223.35公里
+	</td>
+</tr>
+<tr>
+<td>
+&nbsp;
+	</td>
+	<td>
+	&nbsp;
+	</td>
+</tr>
+<tr>
+	<td>
+		APP轨迹里程：
+	</td>
+	<td>
+		221.66公里
+	</td>
+</tr>
+<tr>
+	<td>
+		APP收费路段：
+	</td>
+	<td>
+		0.0公里
+	</td>
+</tr>
+
+<tr>
+	<td>
+		车机轨迹里程：
+	</td>
+	<td>
+		223.3公里
+	</td>
+</tr>
+<tr>
+	<td>
+		车机收费路段：
+	</td>
+	<td>
+		0.0公里
+	</td>
+</tr>
+
+<tr>
+<td>
+&nbsp;
+	</td>
+	<td>
+	&nbsp;
+	</td>
+</tr>
+<tr>
+	<td>
+		驾驶行为分析：
+	</td>
+	<td>
+		以下信息根据车机轨迹获取
+	</td>
+</tr>
+<tr>
+	<td>
+		平均时速：
+	</td>
+	<td>
+		21.42公里/小时
+	</td>
+</tr>
+<tr>
+	<td>
+		最高时速：
+	</td>
+	<td>
+		79公里/小时
+	</td>
+</tr>
+<tr>
+	<td>
+		超速次数：
+	</td>
+	<td>
+		22次(未在地图中标注)
+	</td>
+</tr>
+<tr>
+	<td>
+		急加速次数：
+	</td>
+	<td>
+		0次
+	</td>
+</tr>
+<tr>
+	<td>
+		急刹车次数：
+	</td>
+	<td>
+		0次
+	</td>
+</tr>
+<tr>
+	<td>
+		急转弯次数：
+	</td>
+	<td>
+		0次
+	</td>
+</tr>
+<tr>
+	<td>
+		停留次数：
+	</td>
+	<td>
+	8次
+	</td>
+</tr>
+<tr>
+	<td>
+		累计停留时长：
+	</td>
+	<td>
+		4.74小时
+	</td>
+</tr>
+
+<tr>
+	<td>
+		停留怠速累计时长：
+	</td>
+	<td>
+		2.52小时(算法待验证)
+	</td>
+</tr>
+
+	</table>
+	</td>
+	</tr>
+	</table>
+	
+	</body>
+<script type="text/javascript">
+    var i_app_zhixian = 0;
+    var i_pn_zhixian = 0;
+	// 百度地图API功能
+	var map = new BMap.Map("allmap", {enableMapClick:false});//构造底图时，关闭底图可点功能
+
+    map.enableScrollWheelZoom();                 //启用滚轮放大缩小
+	
+	map.addControl(new BMap.ScaleControl()); // 添加比例尺
+	map.addControl(new BMap.NavigationControl());    //缩放控件
+	map.addControl(new BMap.CityListControl({
+    anchor: BMAP_ANCHOR_TOP_RIGHT}));    //城市列表控件
+	
+	
+	var blue_s_Icon = new BMap.Icon("/static/blue-s.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //起点图标
+	var blue_e_Icon = new BMap.Icon("/static/blue-e.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //终点图标
+	var red_s_Icon = new BMap.Icon("/static/red-s.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //起点图标
+	var red_e_Icon = new BMap.Icon("/static/red-e.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //终点图标
+	var red_p_Icon = new BMap.Icon("/static/red-p.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //停留点图标
+	var red_ji_Icon = new BMap.Icon("/static/red-ji.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //停留点图标
+	var red_sha_Icon = new BMap.Icon("/static/red-sha.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //停留点图标
+	var red_zhuan_Icon = new BMap.Icon("/static/red-zhuan.png", new BMap.Size(32,32),{anchor:new BMap.Size(16,30)}); //停留点图标
+	
+	
+  function draw_line_direction(weight) {
+    var icons=new BMap.IconSequence(
+      new BMap.Symbol('M0 -5 L-5 -2 L0 -4 L5 -2 Z', {
+        scale: weight/10,
+        strokeWeight: 1,
+        rotation: 0,
+        fillColor: 'white',
+        fillOpacity: 1,
+        strokeColor:'white'
+      }),'100%','10%',false);
+    return icons;
+  }	
+  map.centerAndZoom(new BMap.Point(118.27135692539, 33.962625988372), 11);  // 初始化地图,设置中心点坐标和地图级别
+document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+ 
+
+var polyline_app_1 = new BMap.Polyline([
+new BMap.Point(118.27135692539, 33.962625988372),
+new BMap.Point(118.2717035008, 33.965894872405),
+new BMap.Point(118.28463196405, 33.965193359264),
+new BMap.Point(118.2854473057, 33.965145871848),
+new BMap.Point(118.28707999806, 33.982069110179),
+new BMap.Point(118.28714703506, 33.982607306494),
+new BMap.Point(118.28750701934, 33.985503710883),
+new BMap.Point(118.28807031576, 33.987635405554),
+new BMap.Point(118.29339385782, 34.002325120723),
+new BMap.Point(118.29359873242, 34.002446888583),
+new BMap.Point(118.29444418844, 34.002593531456),
+new BMap.Point(118.30455753346, 34.001722012692),
+new BMap.Point(118.30466646355, 34.005668453334),
+new BMap.Point(118.30465159777, 34.005540217356),
+new BMap.Point(118.30599018289, 34.005542575077),
+new BMap.Point(118.30895409697, 34.005093977824),
+new BMap.Point(118.3111802368, 34.004757427877),
+new BMap.Point(118.31182683825, 34.004662943518),
+new BMap.Point(118.31055136021, 33.9991683327),
+new BMap.Point(118.31054357111, 33.994805270993),
+new BMap.Point(118.31084238399, 33.994672363606),
+new BMap.Point(118.31241948003, 33.994855964074),
+new BMap.Point(118.31424032842, 33.99535448771),
+new BMap.Point(118.32039415171, 33.998572893638),
+new BMap.Point(118.32240616577, 33.999834572337),
+new BMap.Point(118.3297824589, 34.003555609614),
+new BMap.Point(118.33048608992, 34.003803058186),
+new BMap.Point(118.33739471436, 34.004773084681),
+new BMap.Point(118.34141307737, 34.004824422874),
+new BMap.Point(118.34839211508, 34.005412695942),
+new BMap.Point(118.35044425183, 34.005434313549),
+new BMap.Point(118.37308817281, 34.003537131634),
+new BMap.Point(118.37738601882, 34.003376567746),
+new BMap.Point(118.37508720982, 33.995589036661),
+new BMap.Point(118.37399555358, 33.992822915739),
+new BMap.Point(118.37170721462, 33.988065454084),
+new BMap.Point(118.37125854222, 33.985886070674),
+new BMap.Point(118.3732164363, 33.962215264217),
+new BMap.Point(118.37260533339, 33.947824107322),
+new BMap.Point(118.37191280038, 33.930476944374),
+new BMap.Point(118.3719167279, 33.902194497033),
+new BMap.Point(118.37191950313, 33.901413691549),
+new BMap.Point(118.37537263534, 33.901718530106),
+new BMap.Point(118.38203790063, 33.902562853228),
+new BMap.Point(118.38469407215, 33.902766467406),
+new BMap.Point(118.40364260052, 33.902867406807),
+new BMap.Point(118.40773843161, 33.902680804533),
+new BMap.Point(118.41763129804, 33.90168729995),
+new BMap.Point(118.42845101578, 33.901380287341),
+new BMap.Point(118.43136040406, 33.901195694984),
+new BMap.Point(118.43417586866, 33.900901225374),
+new BMap.Point(118.43843424436, 33.900076506497),
+new BMap.Point(118.45281267497, 33.896249352966),
+new BMap.Point(118.46905838038, 33.893435932924),
+new BMap.Point(118.47204873726, 33.893011357735),
+new BMap.Point(118.47595336901, 33.892721871602),
+new BMap.Point(118.4947956109, 33.891873896204),
+new BMap.Point(118.49919007533, 33.891511707477),
+new BMap.Point(118.50661544798, 33.890369444257),
+new BMap.Point(118.5167696607, 33.888483978634),
+new BMap.Point(118.52341788094, 33.886564538232),
+new BMap.Point(118.52722481051, 33.884990841637),
+new BMap.Point(118.53000085969, 33.883610466443),
+new BMap.Point(118.53392034346, 33.881279804432),
+new BMap.Point(118.54594358789, 33.872856655844),
+new BMap.Point(118.54849871176, 33.871310947524),
+new BMap.Point(118.55541826886, 33.86796010564),
+new BMap.Point(118.56070639405, 33.865969570484),
+new BMap.Point(118.5801305109, 33.85921656265),
+new BMap.Point(118.58359260742, 33.857753880323),
+new BMap.Point(118.58714878281, 33.855879348739),
+new BMap.Point(118.59075534939, 33.853563086348),
+new BMap.Point(118.59706414744, 33.849164514967),
+new BMap.Point(118.60048624252, 33.846241757235),
+new BMap.Point(118.60414280144, 33.842295986267),
+new BMap.Point(118.60632315282, 33.839153784085),
+new BMap.Point(118.608065271, 33.836169559707),
+new BMap.Point(118.60947170897, 33.833127869973),
+new BMap.Point(118.61067767818, 33.829131009338),
+new BMap.Point(118.61121216157, 33.826460302838),
+new BMap.Point(118.61136849572, 33.824811060106),
+new BMap.Point(118.61496228001, 33.777328450401),
+new BMap.Point(118.61540060347, 33.775026468072),
+new BMap.Point(118.61634792005, 33.771699880779),
+new BMap.Point(118.61769648883, 33.768570460118),
+new BMap.Point(118.61846607779, 33.767169527067),
+new BMap.Point(118.61970741668, 33.765623906814),
+new BMap.Point(118.62131776261, 33.764172694705),
+new BMap.Point(118.62227530944, 33.763490326006),
+new BMap.Point(118.62352035037, 33.762823943124),
+new BMap.Point(118.62603846258, 33.761818497257),
+new BMap.Point(118.62766247434, 33.761441891426),
+new BMap.Point(118.62935764486, 33.761243026094),
+new BMap.Point(118.63524751528, 33.761230142441),
+new BMap.Point(118.63571251258, 33.760857060821),
+new BMap.Point(118.63597088273, 33.760827306035),
+new BMap.Point(118.63665499709, 33.761253491085),
+new BMap.Point(118.64333216314, 33.761412639461),
+new BMap.Point(118.66336456171, 33.762216709753),
+new BMap.Point(118.66969064863, 33.762053667304),
+new BMap.Point(118.67468778615, 33.761633009389),
+new BMap.Point(118.67497496321, 33.761459088553),
+new BMap.Point(118.67512761428, 33.761052719871),
+new BMap.Point(118.67456891148, 33.756584923457),
+new BMap.Point(118.67398757121, 33.753622408464),
+new BMap.Point(118.67336826035, 33.751737134334),
+new BMap.Point(118.6726742161, 33.750169625956),
+new BMap.Point(118.67127545273, 33.747806405696),
+new BMap.Point(118.6692423572, 33.745314561733),
+new BMap.Point(118.66657561363, 33.742842983386),
+new BMap.Point(118.66493755698, 33.741678667594),
+new BMap.Point(118.65770813206, 33.7370604119),
+new BMap.Point(118.65723179545, 33.737204532637),
+new BMap.Point(118.65684262511, 33.736911179642),
+new BMap.Point(118.65685731408, 33.736639393302),
+new BMap.Point(118.65706006279, 33.736444145743),
+new BMap.Point(118.65818293067, 33.736278102874),
+new BMap.Point(118.66433515771, 33.732913451172),
+new BMap.Point(118.66344741771, 33.730710502259),
+new BMap.Point(118.665385444, 33.730192541943),
+new BMap.Point(118.66531779052, 33.729915531471),
+new BMap.Point(118.66531779052, 33.729915531471),
+new BMap.Point(118.66531779052, 33.729915531471)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_1); 
+
+
+	var pointA_app_2 = new BMap.Point(118.66531779052,33.729915531471);  // 创建点坐标A
+	var pointB_app_2 = new BMap.Point(118.66299071011, 33.729578851752);  // 创建点坐标B
+	var polyline_app_2_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_app_2,pointB_app_2)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_app_2.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_app_2_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});
+					polyline_app_2_zhixian_jiejue.hide();
+					map.addOverlay(polyline_app_2_zhixian_jiejue);  
+					i_app_zhixian++;
+					document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+				}
+			}
+		};	
+	
+	
+	var driving_app_2 = new BMap.DrivingRoute(map, options);
+	driving_app_2.search(pointA_app_2,pointB_app_2);
+	}
+var polyline_app_2_zhixian = new BMap.Polyline([
+new BMap.Point(118.66531779052,33.729915531471),
+new BMap.Point(118.66299071011, 33.729578851752)
+	], {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_2_zhixian); 
+
+var polyline_app_2 = new BMap.Polyline([
+new BMap.Point(118.66299071011, 33.729578851752),
+new BMap.Point(118.662169496, 33.727328983128),
+new BMap.Point(118.677326898, 33.722143353732),
+new BMap.Point(118.68127341219, 33.721257849885),
+new BMap.Point(118.69220356947, 33.719299756589),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68927794444, 33.719911130059),
+new BMap.Point(118.68929690531, 33.719907654172),
+new BMap.Point(118.68916431294, 33.719931953996)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_2); 
+
+
+	var pointA_app_3 = new BMap.Point(118.68916431294,33.719931953996);  // 创建点坐标A
+	var pointB_app_3 = new BMap.Point(118.68911958078, 33.719940148305);  // 创建点坐标B
+	var polyline_app_3_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_app_3,pointB_app_3)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_app_3.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_app_3_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});
+					polyline_app_3_zhixian_jiejue.hide();
+					map.addOverlay(polyline_app_3_zhixian_jiejue);  
+					i_app_zhixian++;
+					document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+				}
+			}
+		};	
+	
+	
+	var driving_app_3 = new BMap.DrivingRoute(map, options);
+	driving_app_3.search(pointA_app_3,pointB_app_3);
+	}
+var polyline_app_3_zhixian = new BMap.Polyline([
+new BMap.Point(118.68916431294,33.719931953996),
+new BMap.Point(118.68911958078, 33.719940148305)
+	], {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_3_zhixian); 
+
+var polyline_app_3 = new BMap.Polyline([
+new BMap.Point(118.68911958078, 33.719940148305),
+new BMap.Point(118.68805106545, 33.720113950263),
+new BMap.Point(118.68749098193, 33.718108166121),
+new BMap.Point(118.68760397804, 33.718064027551),
+new BMap.Point(118.68813604179, 33.720046791471),
+new BMap.Point(118.69846842278, 33.718163180241),
+new BMap.Point(118.70266009021, 33.717859676208),
+new BMap.Point(118.7026812558, 33.71794940527),
+new BMap.Point(118.69847652108, 33.718243113065),
+new BMap.Point(118.68507242417, 33.720635572585),
+new BMap.Point(118.68422497223, 33.720778167204),
+new BMap.Point(118.68439173613, 33.721666749977),
+new BMap.Point(118.68608241337, 33.721699628071),
+new BMap.Point(118.68608241337, 33.721699628071),
+new BMap.Point(118.68608241337, 33.721699628071),
+new BMap.Point(118.68608241337, 33.721699628071),
+new BMap.Point(118.6861335491, 33.721700609067),
+new BMap.Point(118.68605517005, 33.721699104383),
+new BMap.Point(118.68616445529, 33.721701200733),
+new BMap.Point(118.68616419543, 33.721701195762),
+new BMap.Point(118.68616419543, 33.721701195762),
+new BMap.Point(118.68616419543, 33.721701195762),
+new BMap.Point(118.68616419543, 33.721701195762),
+new BMap.Point(118.68616419543, 33.721701195762),
+new BMap.Point(118.68616419543, 33.721701195762),
+new BMap.Point(118.68645521791, 33.721706721172),
+new BMap.Point(118.68847188513, 33.721776645685),
+new BMap.Point(118.68803801102, 33.720062957342),
+new BMap.Point(118.68819096436, 33.719936666978),
+new BMap.Point(118.6905535989, 33.719605754536),
+new BMap.Point(118.69269921411, 33.719207435973),
+new BMap.Point(118.69278543687, 33.719191330677),
+new BMap.Point(118.69441433396, 33.718888100266),
+new BMap.Point(118.69612109138, 33.718572815538),
+new BMap.Point(118.69846842278, 33.718163180241),
+new BMap.Point(118.70266009021, 33.717859676208),
+new BMap.Point(118.7026812558, 33.71794940527),
+new BMap.Point(118.69755486563, 33.718386928188),
+new BMap.Point(118.6882371994, 33.720159645831),
+new BMap.Point(118.68873703835, 33.72176707372),
+new BMap.Point(118.68855892838, 33.721768464014),
+new BMap.Point(118.68879535148, 33.72306530582),
+new BMap.Point(118.68653756448, 33.7143458158),
+new BMap.Point(118.68642822102, 33.713922728579),
+new BMap.Point(118.68654620035, 33.713892710596),
+new BMap.Point(118.68724755881, 33.716590009778),
+new BMap.Point(118.68735556248, 33.716562907264),
+new BMap.Point(118.68755312785, 33.717137847801),
+new BMap.Point(118.68819096436, 33.719936666978),
+new BMap.Point(118.6905535989, 33.719605754536),
+new BMap.Point(118.69689302624, 33.718432538972),
+new BMap.Point(118.69708924522, 33.718073523136),
+new BMap.Point(118.69567338639, 33.71447073218),
+new BMap.Point(118.69487713813, 33.714627928762),
+new BMap.Point(118.69487713813, 33.714627928762),
+new BMap.Point(118.69487713813, 33.714627928762),
+new BMap.Point(118.69477941889, 33.714647184694),
+new BMap.Point(118.69388464903, 33.714821941267),
+new BMap.Point(118.69567338639, 33.71447073218),
+new BMap.Point(118.69477738223, 33.712036604536),
+new BMap.Point(118.71176621195, 33.708706334731),
+new BMap.Point(118.71219315642, 33.708298558496),
+new BMap.Point(118.70776445884, 33.697251743252),
+new BMap.Point(118.70547164452, 33.690934985345),
+new BMap.Point(118.70302594302, 33.684750238035),
+new BMap.Point(118.70168045506, 33.680554568267),
+new BMap.Point(118.70132891159, 33.678275733037),
+new BMap.Point(118.70115902744, 33.676212461728),
+new BMap.Point(118.70122178567, 33.674503101238),
+new BMap.Point(118.70161258834, 33.671997668134),
+new BMap.Point(118.70662917343, 33.654706413591),
+new BMap.Point(118.70675646138, 33.653841565186),
+new BMap.Point(118.70645210943, 33.652513790074),
+new BMap.Point(118.70550276785, 33.651281095519),
+new BMap.Point(118.70498371027, 33.650984180694),
+new BMap.Point(118.71053622404, 33.645086019989),
+new BMap.Point(118.7183687309, 33.638845132363),
+new BMap.Point(118.71958822581, 33.63765574143),
+new BMap.Point(118.72075631964, 33.635358485676),
+new BMap.Point(118.72330578636, 33.632069037609),
+new BMap.Point(118.72590853608, 33.629325771044),
+new BMap.Point(118.72841981848, 33.616452790111),
+new BMap.Point(118.73221299264, 33.616628928025),
+new BMap.Point(118.73295160643, 33.613265857738),
+new BMap.Point(118.73311385907, 33.611880507624),
+new BMap.Point(118.73421941, 33.598593788507),
+new BMap.Point(118.73453364626, 33.590494322057),
+new BMap.Point(118.73470796571, 33.590181360117),
+new BMap.Point(118.73722848345, 33.587896235878),
+new BMap.Point(118.73836476677, 33.587260748257),
+new BMap.Point(118.74122360849, 33.586550135891),
+new BMap.Point(118.75038903188, 33.585555096138),
+new BMap.Point(118.75114703812, 33.585310137637),
+new BMap.Point(118.75197558926, 33.584641037118),
+new BMap.Point(118.75237796931, 33.582128931643),
+new BMap.Point(118.7518897603, 33.578114058375),
+new BMap.Point(118.75062725869, 33.574231313738),
+new BMap.Point(118.75069223907, 33.573625586216),
+new BMap.Point(118.75137264656, 33.572003587944),
+new BMap.Point(118.75234160071, 33.570473622575),
+new BMap.Point(118.75396426655, 33.568699006384),
+new BMap.Point(118.75547250818, 33.567337810136),
+new BMap.Point(118.75776167373, 33.563083901664),
+new BMap.Point(118.75828102493, 33.56169562948),
+new BMap.Point(118.75847365225, 33.558664321299),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75528377322, 33.552367215429),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.75840834287, 33.551337372954),
+new BMap.Point(118.75780372976, 33.549719381503),
+new BMap.Point(118.75840834287, 33.551337372954),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75761571137, 33.552119115398),
+new BMap.Point(118.75724970836, 33.552159164902),
+new BMap.Point(118.75724970836, 33.552159164902),
+new BMap.Point(118.75724970836, 33.552159164902)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_3); 
+
+
+	var pointA_app_4 = new BMap.Point(118.75724970836,33.552159164902);  // 创建点坐标A
+	var pointB_app_4 = new BMap.Point(118.75733098624, 33.55207371118);  // 创建点坐标B
+	var polyline_app_4_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_app_4,pointB_app_4)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_app_4.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_app_4_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});
+					polyline_app_4_zhixian_jiejue.hide();
+					map.addOverlay(polyline_app_4_zhixian_jiejue);  
+					i_app_zhixian++;
+					document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+				}
+			}
+		};	
+	
+	
+	var driving_app_4 = new BMap.DrivingRoute(map, options);
+	driving_app_4.search(pointA_app_4,pointB_app_4);
+	}
+var polyline_app_4_zhixian = new BMap.Polyline([
+new BMap.Point(118.75724970836,33.552159164902),
+new BMap.Point(118.75733098624, 33.55207371118)
+	], {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_4_zhixian); 
+
+var polyline_app_4 = new BMap.Polyline([
+new BMap.Point(118.75733098624, 33.55207371118),
+new BMap.Point(118.75733098624, 33.55207371118)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_4); 
+
+
+	var pointA_app_5 = new BMap.Point(118.75733098624,33.55207371118);  // 创建点坐标A
+	var pointB_app_5 = new BMap.Point(118.75725051715, 33.552082600593);  // 创建点坐标B
+	var polyline_app_5_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_app_5,pointB_app_5)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_app_5.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_app_5_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});
+					polyline_app_5_zhixian_jiejue.hide();
+					map.addOverlay(polyline_app_5_zhixian_jiejue);  
+					i_app_zhixian++;
+					document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+				}
+			}
+		};	
+	
+	
+	var driving_app_5 = new BMap.DrivingRoute(map, options);
+	driving_app_5.search(pointA_app_5,pointB_app_5);
+	}
+var polyline_app_5_zhixian = new BMap.Polyline([
+new BMap.Point(118.75733098624,33.55207371118),
+new BMap.Point(118.75725051715, 33.552082600593)
+	], {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_5_zhixian); 
+
+var polyline_app_5 = new BMap.Polyline([
+new BMap.Point(118.75725051715, 33.552082600593),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.75840834287, 33.551337372954),
+new BMap.Point(118.75721407136, 33.548048861277),
+new BMap.Point(118.75658591361, 33.546911131273),
+new BMap.Point(118.75721407136, 33.548048861277),
+new BMap.Point(118.75840834287, 33.551337372954),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.76211127715, 33.551613770267),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75847680644, 33.557223672044),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75828998204, 33.551049168351),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75528377322, 33.552367215429),
+new BMap.Point(118.75597723205, 33.552236164134)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_5); 
+
+
+	var pointA_app_6 = new BMap.Point(118.75597723205,33.552236164134);  // 创建点坐标A
+	var pointB_app_6 = new BMap.Point(118.7565807616, 33.552157671954);  // 创建点坐标B
+	var polyline_app_6_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_app_6,pointB_app_6)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_app_6.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_app_6_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});
+					polyline_app_6_zhixian_jiejue.hide();
+					map.addOverlay(polyline_app_6_zhixian_jiejue);  
+					i_app_zhixian++;
+					document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+				}
+			}
+		};	
+	
+	
+	var driving_app_6 = new BMap.DrivingRoute(map, options);
+	driving_app_6.search(pointA_app_6,pointB_app_6);
+	}
+var polyline_app_6_zhixian = new BMap.Polyline([
+new BMap.Point(118.75597723205,33.552236164134),
+new BMap.Point(118.7565807616, 33.552157671954)
+	], {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_6_zhixian); 
+
+var polyline_app_6 = new BMap.Polyline([
+new BMap.Point(118.7565807616, 33.552157671954),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.75828998204, 33.551049168351),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75854630598, 33.555227898673),
+new BMap.Point(118.75828102493, 33.56169562948),
+new BMap.Point(118.75776167373, 33.563083901664),
+new BMap.Point(118.75547250818, 33.567337810136),
+new BMap.Point(118.75396426655, 33.568699006384),
+new BMap.Point(118.75234160071, 33.570473622575),
+new BMap.Point(118.75137264656, 33.572003587944),
+new BMap.Point(118.75069223907, 33.573625586216),
+new BMap.Point(118.75062725869, 33.574231313738),
+new BMap.Point(118.7518897603, 33.578114058375),
+new BMap.Point(118.75237796931, 33.582128931643),
+new BMap.Point(118.75197558926, 33.584641037118),
+new BMap.Point(118.75114703812, 33.585310137637),
+new BMap.Point(118.75038903188, 33.585555096138),
+new BMap.Point(118.74122360849, 33.586550135891),
+new BMap.Point(118.73836476677, 33.587260748257),
+new BMap.Point(118.73722848345, 33.587896235878),
+new BMap.Point(118.73470796571, 33.590181360117),
+new BMap.Point(118.73453364626, 33.590494322057),
+new BMap.Point(118.73421941, 33.598593788507),
+new BMap.Point(118.73311385907, 33.611880507624),
+new BMap.Point(118.73295160643, 33.613265857738),
+new BMap.Point(118.73221299264, 33.616628928025),
+new BMap.Point(118.73117799878, 33.624910177898),
+new BMap.Point(118.7271839342, 33.62817613185),
+new BMap.Point(118.72590853608, 33.629325771044),
+new BMap.Point(118.72365944344, 33.631677877432),
+new BMap.Point(118.72075631964, 33.635358485676),
+new BMap.Point(118.71958822581, 33.63765574143),
+new BMap.Point(118.7183687309, 33.638845132363),
+new BMap.Point(118.71053622404, 33.645086019989),
+new BMap.Point(118.70544387479, 33.650761122643),
+new BMap.Point(118.70560124155, 33.651226569134),
+new BMap.Point(118.70655864012, 33.652453089085),
+new BMap.Point(118.70685490808, 33.653847964907),
+new BMap.Point(118.70672761243, 33.65471981748),
+new BMap.Point(118.70169086708, 33.672013623127),
+new BMap.Point(118.70130207594, 33.674509053662),
+new BMap.Point(118.70123932317, 33.676211419372),
+new BMap.Point(118.70169088851, 33.680026546561),
+new BMap.Point(118.70226351197, 33.682214342508),
+new BMap.Point(118.70328973911, 33.685233393097),
+new BMap.Point(118.71122670594, 33.705485472447),
+new BMap.Point(118.71593022601, 33.716912898944),
+new BMap.Point(118.71906165791, 33.731208204593),
+new BMap.Point(118.72094785447, 33.739670060638),
+new BMap.Point(118.72390617347, 33.754261761682),
+new BMap.Point(118.70317013735, 33.759075594896),
+new BMap.Point(118.69960279358, 33.759617202318),
+new BMap.Point(118.6939994557, 33.760128791838),
+new BMap.Point(118.69371282543, 33.760394798293),
+new BMap.Point(118.69488825398, 33.767998149265),
+new BMap.Point(118.6956217732, 33.771397419421),
+new BMap.Point(118.69567084058, 33.775295101891),
+new BMap.Point(118.69740370673, 33.778400020953),
+new BMap.Point(118.69841719472, 33.784114726146),
+new BMap.Point(118.69869222326, 33.784944446318),
+new BMap.Point(118.69915198615, 33.785653033048),
+new BMap.Point(118.69966317787, 33.786151911179),
+new BMap.Point(118.70267629061, 33.788091324198),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.71085705401, 33.794977562999),
+new BMap.Point(118.71661403548, 33.801045749192),
+new BMap.Point(118.71708506422, 33.801696874357),
+new BMap.Point(118.71840631054, 33.804408901032),
+new BMap.Point(118.71708506422, 33.801696874357),
+new BMap.Point(118.71661403548, 33.801045749192),
+new BMap.Point(118.71085705401, 33.794977562999),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70184762675, 33.787538836482),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.7105256442, 33.794693511744),
+new BMap.Point(118.71275667559, 33.79396065432),
+new BMap.Point(118.71204930523, 33.790520475775),
+new BMap.Point(118.71275667559, 33.79396065432),
+new BMap.Point(118.71047250227, 33.794709850917),
+new BMap.Point(118.71063060679, 33.794661237405),
+new BMap.Point(118.7105256442, 33.794693511744),
+new BMap.Point(118.70889872662, 33.793409786837),
+new BMap.Point(118.70892821011, 33.795738807932),
+new BMap.Point(118.70892533455, 33.795698182192)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_6); 
+
+
+	var pointA_app_7 = new BMap.Point(118.70892533455,33.795698182192);  // 创建点坐标A
+	var pointB_app_7 = new BMap.Point(118.70892533455, 33.795698182192);  // 创建点坐标B
+	var polyline_app_7_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_app_7,pointB_app_7)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_app_7.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_app_7_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});
+					polyline_app_7_zhixian_jiejue.hide();
+					map.addOverlay(polyline_app_7_zhixian_jiejue);  
+					i_app_zhixian++;
+					document.getElementById('n_app_zhixian').innerText = i_app_zhixian;
+				}
+			}
+		};	
+	
+	
+	var driving_app_7 = new BMap.DrivingRoute(map, options);
+	driving_app_7.search(pointA_app_7,pointB_app_7);
+	}
+var polyline_app_7_zhixian = new BMap.Polyline([
+new BMap.Point(118.70892533455,33.795698182192),
+new BMap.Point(118.70892533455, 33.795698182192)
+	], {strokeColor:'Purple', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_7_zhixian); 
+
+var polyline_app_7 = new BMap.Polyline([
+new BMap.Point(118.70892533455, 33.795698182192),
+new BMap.Point(118.70892533455, 33.795698182192),
+new BMap.Point(118.70892533455, 33.795698182192),
+new BMap.Point(118.70892533455, 33.795698182192),
+new BMap.Point(118.70892533455, 33.795698182192),
+new BMap.Point(118.70962509751, 33.802332456332),
+new BMap.Point(118.70958277927, 33.802498158504),
+new BMap.Point(118.70755058229, 33.792358311386),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70267629061, 33.788091324198),
+new BMap.Point(118.69938147875, 33.785912298556),
+new BMap.Point(118.69854305796, 33.784642188828),
+new BMap.Point(118.69740370673, 33.778400020953),
+new BMap.Point(118.69567084058, 33.775295101891),
+new BMap.Point(118.6956217732, 33.771397419421),
+new BMap.Point(118.69488825398, 33.767998149265),
+new BMap.Point(118.69372583242, 33.760480702757),
+new BMap.Point(118.69336519989, 33.76018716417),
+new BMap.Point(118.66775184073, 33.762256593265),
+new BMap.Point(118.66216955566, 33.762295518131),
+new BMap.Point(118.64332715002, 33.761526558267),
+new BMap.Point(118.63638067794, 33.761396938069),
+new BMap.Point(118.63615318959, 33.761641858989),
+new BMap.Point(118.63587088515, 33.76168436272),
+new BMap.Point(118.63542703629, 33.761430605398),
+new BMap.Point(118.63161621456, 33.761318486412),
+new BMap.Point(118.62846414211, 33.761480014519),
+new BMap.Point(118.62591539937, 33.76194756288),
+new BMap.Point(118.62390417689, 33.762739836696),
+new BMap.Point(118.62231832973, 33.763567137387),
+new BMap.Point(118.62031675615, 33.765112138714),
+new BMap.Point(118.61928327541, 33.766259683923),
+new BMap.Point(118.61817702448, 33.76787766598),
+new BMap.Point(118.6171353634, 33.770026690481),
+new BMap.Point(118.61607620859, 33.772966207358),
+new BMap.Point(118.61548278874, 33.77508960999),
+new BMap.Point(118.6147523535, 33.779785019203),
+new BMap.Point(118.61141292018, 33.826453633919),
+new BMap.Point(118.6108754856, 33.829186321028),
+new BMap.Point(118.60965950621, 33.833157170989),
+new BMap.Point(118.60845062263, 33.835802617841),
+new BMap.Point(118.60656526533, 33.839149883882),
+new BMap.Point(118.60415214515, 33.842597917108),
+new BMap.Point(118.60159222499, 33.845520618108),
+new BMap.Point(118.59893993783, 33.848026541308),
+new BMap.Point(118.59677615607, 33.849709012349),
+new BMap.Point(118.59075464281, 33.853885189449),
+new BMap.Point(118.58681064482, 33.856386992713),
+new BMap.Point(118.58249777508, 33.858502568027),
+new BMap.Point(118.57858197149, 33.860015733712),
+new BMap.Point(118.56054781094, 33.866290732935),
+new BMap.Point(118.55429201781, 33.868751207903),
+new BMap.Point(118.55005905215, 33.870826749734),
+new BMap.Point(118.54535946234, 33.873528994367),
+new BMap.Point(118.53409635033, 33.881494054054),
+new BMap.Point(118.53019977146, 33.88382395529),
+new BMap.Point(118.52738296223, 33.885206431784),
+new BMap.Point(118.5247523725, 33.886302371429),
+new BMap.Point(118.5213355198, 33.887505772318),
+new BMap.Point(118.51786057774, 33.888471813281),
+new BMap.Point(118.50731632913, 33.890441667108),
+new BMap.Point(118.49848135519, 33.891826850364),
+new BMap.Point(118.49408215905, 33.892149704544),
+new BMap.Point(118.4759692599, 33.892971518449),
+new BMap.Point(118.47206663745, 33.893256976618),
+new BMap.Point(118.46907929172, 33.893676516317),
+new BMap.Point(118.45664364037, 33.895753554089),
+new BMap.Point(118.45286054125, 33.89649799622),
+new BMap.Point(118.43844600387, 33.900300535815),
+new BMap.Point(118.43421251204, 33.901147568495),
+new BMap.Point(118.43139105484, 33.901434037747),
+new BMap.Point(118.41728487929, 33.901954758311),
+new BMap.Point(118.41343204337, 33.902272866663),
+new BMap.Point(118.40775211567, 33.902931966295),
+new BMap.Point(118.40553724586, 33.903049010519),
+new BMap.Point(118.38468899802, 33.902838456192),
+new BMap.Point(118.38202581414, 33.902634885658),
+new BMap.Point(118.3753304444, 33.901786944442),
+new BMap.Point(118.37200172824, 33.901491612944),
+new BMap.Point(118.37206037071, 33.930369064013),
+new BMap.Point(118.37307330919, 33.955095994515),
+new BMap.Point(118.37328839819, 33.960906023612),
+new BMap.Point(118.37333889827, 33.962258821959),
+new BMap.Point(118.37135743987, 33.984959612223),
+new BMap.Point(118.37133682154, 33.985846024005),
+new BMap.Point(118.37178348922, 33.988039460046),
+new BMap.Point(118.37407079423, 33.992795061612),
+new BMap.Point(118.37516444202, 33.995562226886),
+new BMap.Point(118.37743713712, 34.003396126165),
+new BMap.Point(118.37308817281, 34.003537131634),
+new BMap.Point(118.35927788665, 34.004632087107),
+new BMap.Point(118.3515207566, 34.005369235278),
+new BMap.Point(118.34839211508, 34.005412695942),
+new BMap.Point(118.3432412042, 34.004926409811),
+new BMap.Point(118.33739471436, 34.004773084681),
+new BMap.Point(118.33048608992, 34.003803058186),
+new BMap.Point(118.32910299855, 34.003252630138),
+new BMap.Point(118.3248020358, 34.001007046853),
+new BMap.Point(118.32450308345, 34.001396505063),
+new BMap.Point(118.32392140433, 34.001533246827),
+new BMap.Point(118.32341681805, 34.001431907015),
+new BMap.Point(118.32268559874, 34.001060546029),
+new BMap.Point(118.32208106174, 34.001856125347),
+new BMap.Point(118.32187501018, 34.00282815583),
+new BMap.Point(118.32344652427, 34.007030353804),
+new BMap.Point(118.31261124397, 34.008083384787),
+new BMap.Point(118.31182683825, 34.004662943518),
+new BMap.Point(118.30599018289, 34.005542575077),
+new BMap.Point(118.30465159777, 34.005540217356),
+new BMap.Point(118.30455851282, 34.001776025131),
+new BMap.Point(118.29339668416, 34.002788130348),
+new BMap.Point(118.28799469174, 33.987658134978),
+new BMap.Point(118.28742939713, 33.985517425268),
+new BMap.Point(118.28638740019, 33.97702182689),
+new BMap.Point(118.2857160318, 33.970059412375),
+new BMap.Point(118.27823626522, 33.970470515352),
+new BMap.Point(118.27210228361, 33.970262131077),
+new BMap.Point(118.27123621508, 33.962998860189),
+new BMap.Point(118.27121442703, 33.962786506529),
+new BMap.Point(118.27119738865, 33.962620443582),
+new BMap.Point(118.27121580676, 33.962799953897),
+new BMap.Point(118.27121580676, 33.962799953897)
+
+ 	], {strokeColor:'red', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_app_7); 
+
+var app_e = new BMap.Marker(new BMap.Point(118.27121580676, 33.962799953897),{icon:red_e_Icon});  // 创建标注
+map.addOverlay(app_e); 
+var app_s = new BMap.Marker(new BMap.Point(118.27135692539, 33.962625988372),{icon:red_s_Icon});  // 创建标注
+map.addOverlay(app_s); 
+
+
+
+document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;
+
+
+var polyline_pn_1 = new BMap.Polyline([
+new BMap.Point(118.27111445163, 33.963011161143),
+new BMap.Point(118.27139799066, 33.962986592358),
+new BMap.Point(118.27179336988, 33.965892316676),
+new BMap.Point(118.28463196405, 33.965193359264),
+new BMap.Point(118.2854473057, 33.965145871848),
+new BMap.Point(118.28707999806, 33.982069110179),
+new BMap.Point(118.28721405977, 33.983145501521),
+new BMap.Point(118.28750701934, 33.985503710883),
+new BMap.Point(118.28807031576, 33.987635405554),
+new BMap.Point(118.29339385782, 34.002325120723),
+new BMap.Point(118.29359873242, 34.002446888583),
+new BMap.Point(118.29444418844, 34.002593531456),
+new BMap.Point(118.30455753346, 34.001722012692),
+new BMap.Point(118.30466646355, 34.005668453334),
+new BMap.Point(118.30465159777, 34.005540217356),
+new BMap.Point(118.30599018289, 34.005542575077),
+new BMap.Point(118.3111802368, 34.004757427877),
+new BMap.Point(118.31182683825, 34.004662943518),
+new BMap.Point(118.31055136021, 33.9991683327),
+new BMap.Point(118.31054357111, 33.994805270993),
+new BMap.Point(118.31084238399, 33.994672363606),
+new BMap.Point(118.31241948003, 33.994855964074),
+new BMap.Point(118.31424032842, 33.99535448771),
+new BMap.Point(118.32039415171, 33.998572893638),
+new BMap.Point(118.32240616577, 33.999834572337),
+new BMap.Point(118.3297824589, 34.003555609614),
+new BMap.Point(118.33048608992, 34.003803058186),
+new BMap.Point(118.33739471436, 34.004773084681),
+new BMap.Point(118.34141307737, 34.004824422874),
+new BMap.Point(118.34839211508, 34.005412695942),
+new BMap.Point(118.35044425183, 34.005434313549),
+new BMap.Point(118.37308817281, 34.003537131634),
+new BMap.Point(118.37738601882, 34.003376567746),
+new BMap.Point(118.37508720982, 33.995589036661),
+new BMap.Point(118.37399555358, 33.992822915739),
+new BMap.Point(118.37170721462, 33.988065454084),
+new BMap.Point(118.37125854222, 33.985886070674),
+new BMap.Point(118.3732164363, 33.962215264217),
+new BMap.Point(118.37205567392, 33.934179916713),
+new BMap.Point(118.37194769703, 33.931415425885),
+new BMap.Point(118.37191280038, 33.930476944374),
+new BMap.Point(118.37191950313, 33.901413691549),
+new BMap.Point(118.37537263534, 33.901718530106),
+new BMap.Point(118.38203790063, 33.902562853228),
+new BMap.Point(118.38469407215, 33.902766467406),
+new BMap.Point(118.40364260052, 33.902867406807),
+new BMap.Point(118.40773843161, 33.902680804533),
+new BMap.Point(118.41763129804, 33.90168729995),
+new BMap.Point(118.42845101578, 33.901380287341),
+new BMap.Point(118.43136040406, 33.901195694984),
+new BMap.Point(118.43417586866, 33.900901225374),
+new BMap.Point(118.43843424436, 33.900076506497),
+new BMap.Point(118.45281267497, 33.896249352966),
+new BMap.Point(118.46905838038, 33.893435932924),
+new BMap.Point(118.47204873726, 33.893011357735),
+new BMap.Point(118.47595336901, 33.892721871602),
+new BMap.Point(118.4947956109, 33.891873896204),
+new BMap.Point(118.49919007533, 33.891511707477),
+new BMap.Point(118.50661544798, 33.890369444257),
+new BMap.Point(118.5167696607, 33.888483978634),
+new BMap.Point(118.52341788094, 33.886564538232),
+new BMap.Point(118.52722481051, 33.884990841637),
+new BMap.Point(118.53000085969, 33.883610466443),
+new BMap.Point(118.53392034346, 33.881279804432),
+new BMap.Point(118.54594358789, 33.872856655844),
+new BMap.Point(118.54849871176, 33.871310947524),
+new BMap.Point(118.55541826886, 33.86796010564),
+new BMap.Point(118.56070639405, 33.865969570484),
+new BMap.Point(118.5801305109, 33.85921656265),
+new BMap.Point(118.58359260742, 33.857753880323),
+new BMap.Point(118.58714878281, 33.855879348739),
+new BMap.Point(118.59075534939, 33.853563086348),
+new BMap.Point(118.59706414744, 33.849164514967),
+new BMap.Point(118.60048624252, 33.846241757235),
+new BMap.Point(118.60414280144, 33.842295986267),
+new BMap.Point(118.60632315282, 33.839153784085),
+new BMap.Point(118.608065271, 33.836169559707),
+new BMap.Point(118.60947170897, 33.833127869973),
+new BMap.Point(118.61067767818, 33.829131009338),
+new BMap.Point(118.61121216157, 33.826460302838),
+new BMap.Point(118.61452041181, 33.781057179354),
+new BMap.Point(118.61496228001, 33.777328450401),
+new BMap.Point(118.61540060347, 33.775026468072),
+new BMap.Point(118.61634792005, 33.771699880779),
+new BMap.Point(118.61769648883, 33.768570460118),
+new BMap.Point(118.61846607779, 33.767169527067),
+new BMap.Point(118.61970741668, 33.765623906814),
+new BMap.Point(118.62131776261, 33.764172694705),
+new BMap.Point(118.62227530944, 33.763490326006),
+new BMap.Point(118.62352484304, 33.762821898797),
+new BMap.Point(118.62603846258, 33.761818497257),
+new BMap.Point(118.62766247434, 33.761441891426),
+new BMap.Point(118.62935764486, 33.761243026094),
+new BMap.Point(118.63524751528, 33.761230142441),
+new BMap.Point(118.63571251258, 33.760857060821),
+new BMap.Point(118.63597659729, 33.760827066987),
+new BMap.Point(118.63665499709, 33.761253491085),
+new BMap.Point(118.64333216314, 33.761412639461),
+new BMap.Point(118.66336456171, 33.762216709753),
+new BMap.Point(118.66877345773, 33.762110194128),
+new BMap.Point(118.67520424466, 33.761592478575),
+new BMap.Point(118.67456891148, 33.756584923457),
+new BMap.Point(118.67398757121, 33.753622408464),
+new BMap.Point(118.67336826035, 33.751737134334),
+new BMap.Point(118.6726742161, 33.750169625956),
+new BMap.Point(118.67127545273, 33.747806405696),
+new BMap.Point(118.6692423572, 33.745314561733),
+new BMap.Point(118.66657561363, 33.742842983386),
+new BMap.Point(118.66493755698, 33.741678667594),
+new BMap.Point(118.65770813206, 33.7370604119),
+new BMap.Point(118.65723179545, 33.737204532637),
+new BMap.Point(118.65684262511, 33.736911179642),
+new BMap.Point(118.65685731408, 33.736639393302),
+new BMap.Point(118.65706006279, 33.736444145743),
+new BMap.Point(118.65818293067, 33.736278102874),
+new BMap.Point(118.66433515771, 33.732913451172),
+new BMap.Point(118.66344741771, 33.730710502259),
+new BMap.Point(118.665385444, 33.730192541943),
+new BMap.Point(118.66537074343, 33.730083997535),
+new BMap.Point(118.66537074343, 33.730083997535)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_1); 
+
+
+	var pointA_pn_2 = new BMap.Point(118.66537074343,33.730083997535);  // 创建点坐标A
+	var pointB_pn_2 = new BMap.Point(118.66532730834, 33.729945811887);  // 创建点坐标B
+	var polyline_pn_2_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_2,pointB_pn_2)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_2.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_2_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_2_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_2_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_2 = new BMap.DrivingRoute(map, options);
+	driving_pn_2.search(pointA_pn_2,pointB_pn_2);
+	}
+var polyline_pn_2_zhixian = new BMap.Polyline([
+new BMap.Point(118.66537074343,33.730083997535),
+new BMap.Point(118.66532730834, 33.729945811887)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_2_zhixian); 
+
+var polyline_pn_2 = new BMap.Polyline([
+new BMap.Point(118.66532730834, 33.729945811887)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_2); 
+
+
+	var pointA_pn_3 = new BMap.Point(118.66532730834,33.729945811887);  // 创建点坐标A
+	var pointB_pn_3 = new BMap.Point(118.66528484374, 33.729810712798);  // 创建点坐标B
+	var polyline_pn_3_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_3,pointB_pn_3)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_3.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_3_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_3_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_3_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_3 = new BMap.DrivingRoute(map, options);
+	driving_pn_3.search(pointA_pn_3,pointB_pn_3);
+	}
+var polyline_pn_3_zhixian = new BMap.Polyline([
+new BMap.Point(118.66532730834,33.729945811887),
+new BMap.Point(118.66528484374, 33.729810712798)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_3_zhixian); 
+
+var polyline_pn_3 = new BMap.Polyline([
+new BMap.Point(118.66528484374, 33.729810712798),
+new BMap.Point(118.66528484374, 33.729810712798),
+new BMap.Point(118.66528484374, 33.729810712798),
+new BMap.Point(118.665385444, 33.730192541943),
+new BMap.Point(118.66912869998, 33.729286355178),
+new BMap.Point(118.66871334714, 33.725198078358),
+new BMap.Point(118.66219942047, 33.727405539186),
+new BMap.Point(118.66440976657, 33.732885723288),
+new BMap.Point(118.66898705985, 33.73210300478),
+new BMap.Point(118.66934197692, 33.731489067497),
+new BMap.Point(118.66913675195, 33.729372496872),
+new BMap.Point(118.66344741771, 33.730710502259),
+new BMap.Point(118.66209390914, 33.727355636295),
+new BMap.Point(118.677326898, 33.722143353732),
+new BMap.Point(118.68029710165, 33.721447620271),
+new BMap.Point(118.69032931738, 33.719572623033),
+new BMap.Point(118.69039244527, 33.71958195351)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_3); 
+
+
+	var pointA_pn_4 = new BMap.Point(118.69039244527,33.71958195351);  // 创建点坐标A
+	var pointB_pn_4 = new BMap.Point(118.68971587461, 33.719677247891);  // 创建点坐标B
+	var polyline_pn_4_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_4,pointB_pn_4)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_4.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_4_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_4_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_4_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_4 = new BMap.DrivingRoute(map, options);
+	driving_pn_4.search(pointA_pn_4,pointB_pn_4);
+	}
+var polyline_pn_4_zhixian = new BMap.Polyline([
+new BMap.Point(118.69039244527,33.71958195351),
+new BMap.Point(118.68971587461, 33.719677247891)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_4_zhixian); 
+
+var polyline_pn_4 = new BMap.Polyline([
+new BMap.Point(118.68971587461, 33.719677247891)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_4); 
+
+
+	var pointA_pn_5 = new BMap.Point(118.68971587461,33.719677247891);  // 创建点坐标A
+	var pointB_pn_5 = new BMap.Point(118.68943249928, 33.719882787648);  // 创建点坐标B
+	var polyline_pn_5_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_5,pointB_pn_5)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_5.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_5_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_5_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_5_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_5 = new BMap.DrivingRoute(map, options);
+	driving_pn_5.search(pointA_pn_5,pointB_pn_5);
+	}
+var polyline_pn_5_zhixian = new BMap.Polyline([
+new BMap.Point(118.68971587461,33.719677247891),
+new BMap.Point(118.68943249928, 33.719882787648)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_5_zhixian); 
+
+var polyline_pn_5 = new BMap.Polyline([
+new BMap.Point(118.68943249928, 33.719882787648),
+new BMap.Point(118.68805106545, 33.720113950263),
+new BMap.Point(118.68749098193, 33.718108166121),
+new BMap.Point(118.68760397804, 33.718064027551),
+new BMap.Point(118.68813604179, 33.720046791471),
+new BMap.Point(118.69846842278, 33.718163180241),
+new BMap.Point(118.70266009021, 33.717859676208),
+new BMap.Point(118.7026812558, 33.71794940527),
+new BMap.Point(118.69847652108, 33.718243113065),
+new BMap.Point(118.69040659883, 33.719781382937),
+new BMap.Point(118.6851304274, 33.720660652685),
+new BMap.Point(118.68422497223, 33.720778167204),
+new BMap.Point(118.68439173613, 33.721666749977),
+new BMap.Point(118.68576725923, 33.721693525455),
+new BMap.Point(118.68610191432, 33.721700002483),
+new BMap.Point(118.68610191432, 33.721700002483)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_5); 
+
+
+	var pointA_pn_6 = new BMap.Point(118.68610191432,33.721700002483);  // 创建点坐标A
+	var pointB_pn_6 = new BMap.Point(118.68616392093, 33.72170119051);  // 创建点坐标B
+	var polyline_pn_6_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_6,pointB_pn_6)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_6.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_6_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_6_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_6_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_6 = new BMap.DrivingRoute(map, options);
+	driving_pn_6.search(pointA_pn_6,pointB_pn_6);
+	}
+var polyline_pn_6_zhixian = new BMap.Polyline([
+new BMap.Point(118.68610191432,33.721700002483),
+new BMap.Point(118.68616392093, 33.72170119051)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_6_zhixian); 
+
+var polyline_pn_6 = new BMap.Polyline([
+new BMap.Point(118.68616392093, 33.72170119051),
+new BMap.Point(118.68606361768, 33.721699266845),
+new BMap.Point(118.68606361768, 33.721699266845)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_6); 
+
+
+	var pointA_pn_7 = new BMap.Point(118.68606361768,33.721699266845);  // 创建点坐标A
+	var pointB_pn_7 = new BMap.Point(118.68604563041, 33.721698920834);  // 创建点坐标B
+	var polyline_pn_7_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_7,pointB_pn_7)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_7.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_7_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_7_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_7_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_7 = new BMap.DrivingRoute(map, options);
+	driving_pn_7.search(pointA_pn_7,pointB_pn_7);
+	}
+var polyline_pn_7_zhixian = new BMap.Polyline([
+new BMap.Point(118.68606361768,33.721699266845),
+new BMap.Point(118.68604563041, 33.721698920834)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_7_zhixian); 
+
+var polyline_pn_7 = new BMap.Polyline([
+new BMap.Point(118.68604563041, 33.721698920834),
+new BMap.Point(118.68847188513, 33.721776645685),
+new BMap.Point(118.68803801102, 33.720062957342),
+new BMap.Point(118.69275984412, 33.719196111749),
+new BMap.Point(118.69278543687, 33.719191330677),
+new BMap.Point(118.69441433396, 33.718888100266),
+new BMap.Point(118.69846842278, 33.718163180241),
+new BMap.Point(118.70266009021, 33.717859676208),
+new BMap.Point(118.7026812558, 33.71794940527),
+new BMap.Point(118.69847652108, 33.718243113065),
+new BMap.Point(118.68896052264, 33.720034061456),
+new BMap.Point(118.6882371994, 33.720159645831),
+new BMap.Point(118.68873703835, 33.72176707372),
+new BMap.Point(118.68855892838, 33.721768464014),
+new BMap.Point(118.68879535148, 33.72306530582),
+new BMap.Point(118.68681246543, 33.715407990386),
+new BMap.Point(118.68642822102, 33.713922728579),
+new BMap.Point(118.68654620035, 33.713892710596),
+new BMap.Point(118.68724755881, 33.716590009778),
+new BMap.Point(118.68735556248, 33.716562907264),
+new BMap.Point(118.68755312785, 33.717137847801),
+new BMap.Point(118.68819096436, 33.719936666978),
+new BMap.Point(118.6905535989, 33.719605754536),
+new BMap.Point(118.69689302624, 33.718432538972),
+new BMap.Point(118.69708924522, 33.718073523136),
+new BMap.Point(118.69567338639, 33.71447073218),
+new BMap.Point(118.69471874667, 33.714659055707),
+new BMap.Point(118.69471874667, 33.714659055707)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_7); 
+
+
+	var pointA_pn_8 = new BMap.Point(118.69471874667,33.714659055707);  // 创建点坐标A
+	var pointB_pn_8 = new BMap.Point(118.69494642444, 33.714614270857);  // 创建点坐标B
+	var polyline_pn_8_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_8,pointB_pn_8)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_8.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_8_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_8_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_8_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_8 = new BMap.DrivingRoute(map, options);
+	driving_pn_8.search(pointA_pn_8,pointB_pn_8);
+	}
+var polyline_pn_8_zhixian = new BMap.Polyline([
+new BMap.Point(118.69471874667,33.714659055707),
+new BMap.Point(118.69494642444, 33.714614270857)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_8_zhixian); 
+
+var polyline_pn_8 = new BMap.Polyline([
+new BMap.Point(118.69494642444, 33.714614270857),
+new BMap.Point(118.69567338639, 33.71447073218),
+new BMap.Point(118.69477738223, 33.712036604536),
+new BMap.Point(118.71176621195, 33.708706334731),
+new BMap.Point(118.71219315642, 33.708298558496),
+new BMap.Point(118.70776445884, 33.697251743252),
+new BMap.Point(118.70547164452, 33.690934985345),
+new BMap.Point(118.70302594302, 33.684750238035),
+new BMap.Point(118.70168045506, 33.680554568267),
+new BMap.Point(118.70132891159, 33.678275733037),
+new BMap.Point(118.70115902744, 33.676212461728),
+new BMap.Point(118.70122178567, 33.674503101238),
+new BMap.Point(118.70161258834, 33.671997668134),
+new BMap.Point(118.70662917343, 33.654706413591),
+new BMap.Point(118.70675646138, 33.653841565186),
+new BMap.Point(118.70645210943, 33.652513790074),
+new BMap.Point(118.70550276785, 33.651281095519),
+new BMap.Point(118.70498371027, 33.650984180694),
+new BMap.Point(118.71053622404, 33.645086019989),
+new BMap.Point(118.7183687309, 33.638845132363),
+new BMap.Point(118.71958822581, 33.63765574143),
+new BMap.Point(118.72075631964, 33.635358485676),
+new BMap.Point(118.72330578636, 33.632069037609),
+new BMap.Point(118.72590853608, 33.629325771044),
+new BMap.Point(118.72841981848, 33.616452790111),
+new BMap.Point(118.73221299264, 33.616628928025),
+new BMap.Point(118.73295160643, 33.613265857738),
+new BMap.Point(118.73311385907, 33.611880507624),
+new BMap.Point(118.73421941, 33.598593788507),
+new BMap.Point(118.73453364626, 33.590494322057),
+new BMap.Point(118.73470796571, 33.590181360117),
+new BMap.Point(118.73722848345, 33.587896235878),
+new BMap.Point(118.73836786421, 33.587259482194),
+new BMap.Point(118.74122360849, 33.586550135891),
+new BMap.Point(118.75038903188, 33.585555096138),
+new BMap.Point(118.75114703812, 33.585310137637),
+new BMap.Point(118.75197558926, 33.584641037118),
+new BMap.Point(118.75237796931, 33.582128931643),
+new BMap.Point(118.7518897603, 33.578114058375),
+new BMap.Point(118.75062725869, 33.574231313738),
+new BMap.Point(118.75069223907, 33.573625586216),
+new BMap.Point(118.75137264656, 33.572003587944),
+new BMap.Point(118.75234160071, 33.570473622575),
+new BMap.Point(118.75396426655, 33.568699006384),
+new BMap.Point(118.75547250818, 33.567337810136),
+new BMap.Point(118.75776167373, 33.563083901664),
+new BMap.Point(118.75828102493, 33.56169562948),
+new BMap.Point(118.75847365225, 33.558664321299),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75528377322, 33.552367215429),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.75828998204, 33.551049168351),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75528377322, 33.552367215429),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.75828998204, 33.551049168351),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75742653044, 33.552139802907)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_8); 
+
+
+	var pointA_pn_9 = new BMap.Point(118.75742653044,33.552139802907);  // 创建点坐标A
+	var pointB_pn_9 = new BMap.Point(118.75719262501, 33.552165420904);  // 创建点坐标B
+	var polyline_pn_9_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_9,pointB_pn_9)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_9.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_9_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_9_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_9_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_9 = new BMap.DrivingRoute(map, options);
+	driving_pn_9.search(pointA_pn_9,pointB_pn_9);
+	}
+var polyline_pn_9_zhixian = new BMap.Polyline([
+new BMap.Point(118.75742653044,33.552139802907),
+new BMap.Point(118.75719262501, 33.552165420904)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_9_zhixian); 
+
+var polyline_pn_9 = new BMap.Polyline([
+new BMap.Point(118.75719262501, 33.552165420904),
+new BMap.Point(118.75722501194, 33.552161871167),
+new BMap.Point(118.75714593327, 33.552170540008),
+new BMap.Point(118.75714593327, 33.552170540008)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_9); 
+
+
+	var pointA_pn_10 = new BMap.Point(118.75714593327,33.552170540008);  // 创建点坐标A
+	var pointB_pn_10 = new BMap.Point(118.75818599021, 33.550765544577);  // 创建点坐标B
+	var polyline_pn_10_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_10,pointB_pn_10)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_10.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_10_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_10_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_10_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_10 = new BMap.DrivingRoute(map, options);
+	driving_pn_10.search(pointA_pn_10,pointB_pn_10);
+	}
+var polyline_pn_10_zhixian = new BMap.Polyline([
+new BMap.Point(118.75714593327,33.552170540008),
+new BMap.Point(118.75818599021, 33.550765544577)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_10_zhixian); 
+
+var polyline_pn_10 = new BMap.Polyline([
+new BMap.Point(118.75818599021, 33.550765544577),
+new BMap.Point(118.75828998204, 33.551049168351),
+new BMap.Point(118.75721407136, 33.548048861277),
+new BMap.Point(118.75658591361, 33.546911131273),
+new BMap.Point(118.75721407136, 33.548048861277),
+new BMap.Point(118.75840834287, 33.551337372954),
+new BMap.Point(118.75850047739, 33.551944219174),
+new BMap.Point(118.76211127715, 33.551613770267),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75847680644, 33.557223672044),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75828998204, 33.551049168351),
+new BMap.Point(118.75851336406, 33.552021340222),
+new BMap.Point(118.75718062173, 33.552166736732),
+new BMap.Point(118.75718062173, 33.552166736732),
+new BMap.Point(118.75528377322, 33.552367215429),
+new BMap.Point(118.75786033437, 33.552015363393)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_10); 
+
+
+	var pointA_pn_11 = new BMap.Point(118.75786033437,33.552015363393);  // 创建点坐标A
+	var pointB_pn_11 = new BMap.Point(118.75846416799, 33.551948245992);  // 创建点坐标B
+	var polyline_pn_11_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_11,pointB_pn_11)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_11.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_11_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_11_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_11_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_11 = new BMap.DrivingRoute(map, options);
+	driving_pn_11.search(pointA_pn_11,pointB_pn_11);
+	}
+var polyline_pn_11_zhixian = new BMap.Polyline([
+new BMap.Point(118.75786033437,33.552015363393),
+new BMap.Point(118.75846416799, 33.551948245992)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_11_zhixian); 
+
+var polyline_pn_11 = new BMap.Polyline([
+new BMap.Point(118.75846416799, 33.551948245992),
+new BMap.Point(118.75854630598, 33.555227898673),
+new BMap.Point(118.75828102493, 33.56169562948),
+new BMap.Point(118.75776167373, 33.563083901664),
+new BMap.Point(118.75547250818, 33.567337810136),
+new BMap.Point(118.75396426655, 33.568699006384),
+new BMap.Point(118.75234160071, 33.570473622575),
+new BMap.Point(118.75137264656, 33.572003587944),
+new BMap.Point(118.75069223907, 33.573625586216),
+new BMap.Point(118.75062725869, 33.574231313738),
+new BMap.Point(118.7518897603, 33.578114058375),
+new BMap.Point(118.75237796931, 33.582128931643),
+new BMap.Point(118.75197558926, 33.584641037118),
+new BMap.Point(118.75114703812, 33.585310137637),
+new BMap.Point(118.75038903188, 33.585555096138),
+new BMap.Point(118.74122360849, 33.586550135891),
+new BMap.Point(118.73836476677, 33.587260748257),
+new BMap.Point(118.73722848345, 33.587896235878),
+new BMap.Point(118.73470796571, 33.590181360117),
+new BMap.Point(118.73453364626, 33.590494322057),
+new BMap.Point(118.73421941, 33.598593788507),
+new BMap.Point(118.73311385907, 33.611880507624),
+new BMap.Point(118.73295160643, 33.613265857738),
+new BMap.Point(118.73221299264, 33.616628928025),
+new BMap.Point(118.73117799878, 33.624910177898),
+new BMap.Point(118.7271839342, 33.62817613185),
+new BMap.Point(118.72590853608, 33.629325771044),
+new BMap.Point(118.72365944344, 33.631677877432),
+new BMap.Point(118.72075631964, 33.635358485676),
+new BMap.Point(118.71958822581, 33.63765574143),
+new BMap.Point(118.7183687309, 33.638845132363),
+new BMap.Point(118.71053622404, 33.645086019989),
+new BMap.Point(118.70544387479, 33.650761122643),
+new BMap.Point(118.70560124155, 33.651226569134),
+new BMap.Point(118.70655864012, 33.652453089085),
+new BMap.Point(118.70685490808, 33.653847964907),
+new BMap.Point(118.70672761243, 33.65471981748),
+new BMap.Point(118.70169086708, 33.672013623127),
+new BMap.Point(118.70130207594, 33.674509053662),
+new BMap.Point(118.70123932317, 33.676211419372),
+new BMap.Point(118.70169088851, 33.680026546561),
+new BMap.Point(118.70226351197, 33.682214342508),
+new BMap.Point(118.70328973911, 33.685233393097),
+new BMap.Point(118.71122670594, 33.705485472447),
+new BMap.Point(118.71593022601, 33.716912898944),
+new BMap.Point(118.72094785447, 33.739670060638),
+new BMap.Point(118.72390617347, 33.754261761682),
+new BMap.Point(118.70317013735, 33.759075594896),
+new BMap.Point(118.69960279358, 33.759617202318),
+new BMap.Point(118.6939994557, 33.760128791838),
+new BMap.Point(118.69371282543, 33.760394798293),
+new BMap.Point(118.69488825398, 33.767998149265),
+new BMap.Point(118.6956217732, 33.771397419421),
+new BMap.Point(118.69567084058, 33.775295101891),
+new BMap.Point(118.69740370673, 33.778400020953),
+new BMap.Point(118.69841719472, 33.784114726146),
+new BMap.Point(118.69869222326, 33.784944446318),
+new BMap.Point(118.69915198615, 33.785653033048),
+new BMap.Point(118.69966317787, 33.786151911179),
+new BMap.Point(118.70267629061, 33.788091324198),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.71085705401, 33.794977562999),
+new BMap.Point(118.71661403548, 33.801045749192),
+new BMap.Point(118.71708506422, 33.801696874357),
+new BMap.Point(118.71840631054, 33.804408901032),
+new BMap.Point(118.71708506422, 33.801696874357),
+new BMap.Point(118.71661403548, 33.801045749192),
+new BMap.Point(118.71085705401, 33.794977562999),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70184762675, 33.787538836482),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.7105256442, 33.794693511744),
+new BMap.Point(118.71275667559, 33.79396065432),
+new BMap.Point(118.71204930523, 33.790520475775),
+new BMap.Point(118.71275667559, 33.79396065432),
+new BMap.Point(118.7105256442, 33.794693511744),
+new BMap.Point(118.71062635913, 33.794662543549),
+new BMap.Point(118.7105256442, 33.794693511744),
+new BMap.Point(118.70891844849, 33.793425162824),
+new BMap.Point(118.70892900991, 33.795750107401),
+new BMap.Point(118.70892472043, 33.795689505795),
+new BMap.Point(118.70892472043, 33.795689505795),
+new BMap.Point(118.70892472043, 33.795689505795),
+new BMap.Point(118.70892472043, 33.795689505795)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_11); 
+
+
+	var pointA_pn_12 = new BMap.Point(118.70892472043,33.795689505795);  // 创建点坐标A
+	var pointB_pn_12 = new BMap.Point(118.70892087646, 33.795635197283);  // 创建点坐标B
+	var polyline_pn_12_zhixian_jiejue=new BMap.Polyline();
+	if(map.getDistance(pointA_pn_12,pointB_pn_12)>100){
+	var options = {
+			onSearchComplete: function(results){
+				if (driving_pn_12.getStatus() == BMAP_STATUS_SUCCESS){
+					// 获取第一条方案
+					var plan = results.getPlan(0);
+					// 获取方案的驾车线路
+					var route = plan.getRoute(0);
+					polyline_pn_12_zhixian_jiejue = new BMap.Polyline(
+							route.getPath()
+							, {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});
+					polyline_pn_12_zhixian_jiejue.hide();
+					map.addOverlay(polyline_pn_12_zhixian_jiejue);  
+					i_pn_zhixian++;
+					document.getElementById('n_pn_zhixian').innerText = i_pn_zhixian;				}
+			}
+		};	
+	
+	
+	var driving_pn_12 = new BMap.DrivingRoute(map, options);
+	driving_pn_12.search(pointA_pn_12,pointB_pn_12);
+	}
+var polyline_pn_12_zhixian = new BMap.Polyline([
+new BMap.Point(118.70892472043,33.795689505795),
+new BMap.Point(118.70892087646, 33.795635197283)
+	], {strokeColor:'black', strokeWeight:5, strokeOpacity:0.4});   //创建折线
+map.addOverlay(polyline_pn_12_zhixian); 
+
+var polyline_pn_12 = new BMap.Polyline([
+new BMap.Point(118.70892087646, 33.795635197283),
+new BMap.Point(118.70892087646, 33.795635197283),
+new BMap.Point(118.7089284917, 33.795742786253),
+new BMap.Point(118.70870177763, 33.793256207389),
+new BMap.Point(118.70614992131, 33.791265319296),
+new BMap.Point(118.7045053066, 33.789614308377),
+new BMap.Point(118.70267629061, 33.788091324198),
+new BMap.Point(118.69966317787, 33.786151911179),
+new BMap.Point(118.69900169825, 33.78545481052),
+new BMap.Point(118.69854305796, 33.784642188828),
+new BMap.Point(118.69740370673, 33.778400020953),
+new BMap.Point(118.69567084058, 33.775295101891),
+new BMap.Point(118.6956217732, 33.771397419421),
+new BMap.Point(118.69488825398, 33.767998149265),
+new BMap.Point(118.69372583242, 33.760480702757),
+new BMap.Point(118.69336519989, 33.76018716417),
+new BMap.Point(118.66775184073, 33.762256593265),
+new BMap.Point(118.66216955566, 33.762295518131),
+new BMap.Point(118.64332715002, 33.761526558267),
+new BMap.Point(118.63638067794, 33.761396938069),
+new BMap.Point(118.63615318959, 33.761641858989),
+new BMap.Point(118.63587088515, 33.76168436272),
+new BMap.Point(118.63542703629, 33.761430605398),
+new BMap.Point(118.63161621456, 33.761318486412),
+new BMap.Point(118.62846414211, 33.761480014519),
+new BMap.Point(118.62591539937, 33.76194756288),
+new BMap.Point(118.62390417689, 33.762739836696),
+new BMap.Point(118.62231832973, 33.763567137387),
+new BMap.Point(118.62031675615, 33.765112138714),
+new BMap.Point(118.61928327541, 33.766259683923),
+new BMap.Point(118.61817702448, 33.76787766598),
+new BMap.Point(118.61712010297, 33.77006213537),
+new BMap.Point(118.61607620859, 33.772966207358),
+new BMap.Point(118.61548278874, 33.77508960999),
+new BMap.Point(118.6147523535, 33.779785019203),
+new BMap.Point(118.61470755738, 33.780421999814),
+new BMap.Point(118.61141292018, 33.826453633919),
+new BMap.Point(118.6108754856, 33.829186321028),
+new BMap.Point(118.60965950621, 33.833157170989),
+new BMap.Point(118.60845062263, 33.835802617841),
+new BMap.Point(118.60656526533, 33.839149883882),
+new BMap.Point(118.60415214515, 33.842597917108),
+new BMap.Point(118.60159222499, 33.845520618108),
+new BMap.Point(118.59893993783, 33.848026541308),
+new BMap.Point(118.59677615607, 33.849709012349),
+new BMap.Point(118.59075464281, 33.853885189449),
+new BMap.Point(118.58681064482, 33.856386992713),
+new BMap.Point(118.58249777508, 33.858502568027),
+new BMap.Point(118.57858197149, 33.860015733712),
+new BMap.Point(118.56054781094, 33.866290732935),
+new BMap.Point(118.55429201781, 33.868751207903),
+new BMap.Point(118.55005905215, 33.870826749734),
+new BMap.Point(118.54535946234, 33.873528994367),
+new BMap.Point(118.53409635033, 33.881494054054),
+new BMap.Point(118.53019977146, 33.88382395529),
+new BMap.Point(118.52738296223, 33.885206431784),
+new BMap.Point(118.5247523725, 33.886302371429),
+new BMap.Point(118.5213355198, 33.887505772318),
+new BMap.Point(118.51786057774, 33.888471813281),
+new BMap.Point(118.50731632913, 33.890441667108),
+new BMap.Point(118.49848135519, 33.891826850364),
+new BMap.Point(118.49408215905, 33.892149704544),
+new BMap.Point(118.4759692599, 33.892971518449),
+new BMap.Point(118.47206663745, 33.893256976618),
+new BMap.Point(118.46907929172, 33.893676516317),
+new BMap.Point(118.45664364037, 33.895753554089),
+new BMap.Point(118.45286054125, 33.89649799622),
+new BMap.Point(118.43844600387, 33.900300535815),
+new BMap.Point(118.43421251204, 33.901147568495),
+new BMap.Point(118.43139105484, 33.901434037747),
+new BMap.Point(118.41728487929, 33.901954758311),
+new BMap.Point(118.41343204337, 33.902272866663),
+new BMap.Point(118.40775211567, 33.902931966295),
+new BMap.Point(118.40553724586, 33.903049010519),
+new BMap.Point(118.38468899802, 33.902838456192),
+new BMap.Point(118.38202581414, 33.902634885658),
+new BMap.Point(118.3753304444, 33.901786944442),
+new BMap.Point(118.37200172824, 33.901491612944),
+new BMap.Point(118.37206037071, 33.930369064013),
+new BMap.Point(118.3733131435, 33.961581927622),
+new BMap.Point(118.37333889827, 33.962258821959),
+new BMap.Point(118.37133682154, 33.985846024005),
+new BMap.Point(118.37178348922, 33.988039460046),
+new BMap.Point(118.37407079423, 33.992795061612),
+new BMap.Point(118.37516444202, 33.995562226886),
+new BMap.Point(118.37743713712, 34.003396126165),
+new BMap.Point(118.37308817281, 34.003537131634),
+new BMap.Point(118.35927788665, 34.004632087107),
+new BMap.Point(118.3515207566, 34.005369235278),
+new BMap.Point(118.34839211508, 34.005412695942),
+new BMap.Point(118.3432412042, 34.004926409811),
+new BMap.Point(118.33739471436, 34.004773084681),
+new BMap.Point(118.33048608992, 34.003803058186),
+new BMap.Point(118.32910299855, 34.003252630138),
+new BMap.Point(118.3248020358, 34.001007046853),
+new BMap.Point(118.32450308345, 34.001396505063),
+new BMap.Point(118.32392140433, 34.001533246827),
+new BMap.Point(118.32341681805, 34.001431907015),
+new BMap.Point(118.32268559874, 34.001060546029),
+new BMap.Point(118.32208106174, 34.001856125347),
+new BMap.Point(118.32187501018, 34.00282815583),
+new BMap.Point(118.32344652427, 34.007030353804),
+new BMap.Point(118.31261124397, 34.008083384787),
+new BMap.Point(118.31182683825, 34.004662943518),
+new BMap.Point(118.30599018289, 34.005542575077),
+new BMap.Point(118.30465159777, 34.005540217356),
+new BMap.Point(118.30455851282, 34.001776025131),
+new BMap.Point(118.29339668416, 34.002788130348),
+new BMap.Point(118.28799469174, 33.987658134978),
+new BMap.Point(118.28742939713, 33.985517425268),
+new BMap.Point(118.2857160318, 33.970059412375),
+new BMap.Point(118.27823626522, 33.970470515352),
+new BMap.Point(118.27203238706, 33.970259763671),
+new BMap.Point(118.27131387918, 33.96376142551),
+new BMap.Point(118.27124348053, 33.963070198531),
+new BMap.Point(118.27124348053, 33.963070198531),
+new BMap.Point(118.27124348053, 33.963070198531)
+
+ 	], {strokeColor:'blue', strokeWeight:5, strokeOpacity:0.6});   //创建折线
+map.addOverlay(polyline_pn_12); 
+
+	var pn_e = new BMap.Marker(new BMap.Point(118.27124348053, 33.963070198531),{icon:blue_e_Icon});  // 创建标注
+	map.addOverlay(pn_e); 
+	var pn_s = new BMap.Marker(new BMap.Point(118.27111445163, 33.963011161143),{icon:blue_s_Icon});  // 创建标注
+	map.addOverlay(pn_s); 
+
+
+
+
+
+
+
+
+
+
+
+
+var app_p_point_1 = new BMap.Point(118.66475460651, 33.730344863677);
+var app_p_1 = new BMap.Marker(app_p_point_1,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_1); 
+	var infoWindow_p_1 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 10:19:09<br>结束时间:2018-03-10 10:59:32<br>停留时长:&nbsp;40.38&nbsp;分钟<br>怠速时长:&nbsp;22.25&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_1.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_1,app_p_point_1); //开启信息窗口
+	});
+
+var app_p_point_2 = new BMap.Point(118.68908460452, 33.719946554195);
+var app_p_2 = new BMap.Marker(app_p_point_2,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_2); 
+	var infoWindow_p_2 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 11:30:51<br>结束时间:2018-03-10 12:08:54<br>停留时长:&nbsp;38.04&nbsp;分钟<br>怠速时长:&nbsp;9.08&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_2.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_2,app_p_point_2); //开启信息窗口
+	});
+
+var app_p_point_3 = new BMap.Point(118.68965357149, 33.719842209352);
+var app_p_3 = new BMap.Marker(app_p_point_3,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_3); 
+	var infoWindow_p_3 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 12:15:29<br>结束时间:2018-03-10 13:22:35<br>停留时长:&nbsp;67.09&nbsp;分钟<br>怠速时长:&nbsp;22.0&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_3.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_3,app_p_point_3); //开启信息窗口
+	});
+
+var app_p_point_4 = new BMap.Point(118.68826623332, 33.720959035685);
+var app_p_4 = new BMap.Marker(app_p_point_4,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_4); 
+	var infoWindow_p_4 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 13:22:55<br>结束时间:2018-03-10 13:53:15<br>停留时长:&nbsp;30.33&nbsp;分钟<br>怠速时长:&nbsp;26.83&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_4.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_4,app_p_point_4); //开启信息窗口
+	});
+
+var app_p_point_5 = new BMap.Point(118.69471874667, 33.714659055707);
+var app_p_5 = new BMap.Marker(app_p_point_5,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_5); 
+	var infoWindow_p_5 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 14:00:59<br>结束时间:2018-03-10 14:18:10<br>停留时长:&nbsp;17.18&nbsp;分钟<br>怠速时长:&nbsp;8.5&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_5.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_5,app_p_point_5); //开启信息窗口
+	});
+
+var app_p_point_6 = new BMap.Point(118.75711410157, 33.552174030923);
+var app_p_6 = new BMap.Marker(app_p_point_6,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_6); 
+	var infoWindow_p_6 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 14:50:11<br>结束时间:2018-03-10 15:29:12<br>停留时长:&nbsp;39.01&nbsp;分钟<br>怠速时长:&nbsp;28.16&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_6.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_6,app_p_point_6); //开启信息窗口
+	});
+
+var app_p_point_7 = new BMap.Point(118.75851739235, 33.552563305561);
+var app_p_7 = new BMap.Marker(app_p_point_7,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_7); 
+	var infoWindow_p_7 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 15:36:27<br>结束时间:2018-03-10 15:51:41<br>停留时长:&nbsp;15.23&nbsp;分钟<br>怠速时长:&nbsp;10.08&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_7.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_7,app_p_point_7); //开启信息窗口
+	});
+
+var app_p_point_8 = new BMap.Point(118.70891174394, 33.795508890933);
+var app_p_8 = new BMap.Marker(app_p_point_8,{icon:red_p_Icon});  // 创建标注
+map.addOverlay(app_p_8); 
+	var infoWindow_p_8 = new BMap.InfoWindow("停留点<br>开始时间:2018-03-10 16:50:22<br>结束时间:2018-03-10 17:27:36<br>停留时长:&nbsp;37.23&nbsp;分钟<br>怠速时长:&nbsp;24.41&nbsp;分钟(算法待验证)");  // 创建信息窗口对象 
+	app_p_8.addEventListener("click", function(){          
+		map.openInfoWindow(infoWindow_p_8,app_p_point_8); //开启信息窗口
+	});
+
+
+function show_hide_guiji(){
+if(document.getElementById('disp_app').checked){
+
+
+polyline_app_1.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_app_2_zhixian.hide();
+polyline_app_2_zhixian_jiejue.show();
+}
+else{
+polyline_app_2_zhixian.show();
+polyline_app_2_zhixian_jiejue.hide();
+}
+
+polyline_app_2.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_app_3_zhixian.hide();
+polyline_app_3_zhixian_jiejue.show();
+}
+else{
+polyline_app_3_zhixian.show();
+polyline_app_3_zhixian_jiejue.hide();
+}
+
+polyline_app_3.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_app_4_zhixian.hide();
+polyline_app_4_zhixian_jiejue.show();
+}
+else{
+polyline_app_4_zhixian.show();
+polyline_app_4_zhixian_jiejue.hide();
+}
+
+polyline_app_4.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_app_5_zhixian.hide();
+polyline_app_5_zhixian_jiejue.show();
+}
+else{
+polyline_app_5_zhixian.show();
+polyline_app_5_zhixian_jiejue.hide();
+}
+
+polyline_app_5.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_app_6_zhixian.hide();
+polyline_app_6_zhixian_jiejue.show();
+}
+else{
+polyline_app_6_zhixian.show();
+polyline_app_6_zhixian_jiejue.hide();
+}
+
+polyline_app_6.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_app_7_zhixian.hide();
+polyline_app_7_zhixian_jiejue.show();
+}
+else{
+polyline_app_7_zhixian.show();
+polyline_app_7_zhixian_jiejue.hide();
+}
+
+polyline_app_7.show();
+
+			map.addOverlay(app_e); 
+			map.addOverlay(app_s); 
+}
+else{
+
+
+polyline_app_1.hide();
+
+
+polyline_app_2_zhixian.hide();
+polyline_app_2_zhixian_jiejue.hide();
+
+
+polyline_app_2.hide();
+
+
+polyline_app_3_zhixian.hide();
+polyline_app_3_zhixian_jiejue.hide();
+
+
+polyline_app_3.hide();
+
+
+polyline_app_4_zhixian.hide();
+polyline_app_4_zhixian_jiejue.hide();
+
+
+polyline_app_4.hide();
+
+
+polyline_app_5_zhixian.hide();
+polyline_app_5_zhixian_jiejue.hide();
+
+
+polyline_app_5.hide();
+
+
+polyline_app_6_zhixian.hide();
+polyline_app_6_zhixian_jiejue.hide();
+
+
+polyline_app_6.hide();
+
+
+polyline_app_7_zhixian.hide();
+polyline_app_7_zhixian_jiejue.hide();
+
+
+polyline_app_7.hide();
+
+			map.removeOverlay(app_e); 
+			map.removeOverlay(app_s); 
+}
+
+if(document.getElementById('disp_pn').checked){
+
+
+polyline_pn_1.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_2_zhixian.hide();
+polyline_pn_2_zhixian_jiejue.show();
+}
+else{
+polyline_pn_2_zhixian.show();
+polyline_pn_2_zhixian_jiejue.hide();
+}
+
+polyline_pn_2.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_3_zhixian.hide();
+polyline_pn_3_zhixian_jiejue.show();
+}
+else{
+polyline_pn_3_zhixian.show();
+polyline_pn_3_zhixian_jiejue.hide();
+}
+
+polyline_pn_3.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_4_zhixian.hide();
+polyline_pn_4_zhixian_jiejue.show();
+}
+else{
+polyline_pn_4_zhixian.show();
+polyline_pn_4_zhixian_jiejue.hide();
+}
+
+polyline_pn_4.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_5_zhixian.hide();
+polyline_pn_5_zhixian_jiejue.show();
+}
+else{
+polyline_pn_5_zhixian.show();
+polyline_pn_5_zhixian_jiejue.hide();
+}
+
+polyline_pn_5.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_6_zhixian.hide();
+polyline_pn_6_zhixian_jiejue.show();
+}
+else{
+polyline_pn_6_zhixian.show();
+polyline_pn_6_zhixian_jiejue.hide();
+}
+
+polyline_pn_6.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_7_zhixian.hide();
+polyline_pn_7_zhixian_jiejue.show();
+}
+else{
+polyline_pn_7_zhixian.show();
+polyline_pn_7_zhixian_jiejue.hide();
+}
+
+polyline_pn_7.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_8_zhixian.hide();
+polyline_pn_8_zhixian_jiejue.show();
+}
+else{
+polyline_pn_8_zhixian.show();
+polyline_pn_8_zhixian_jiejue.hide();
+}
+
+polyline_pn_8.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_9_zhixian.hide();
+polyline_pn_9_zhixian_jiejue.show();
+}
+else{
+polyline_pn_9_zhixian.show();
+polyline_pn_9_zhixian_jiejue.hide();
+}
+
+polyline_pn_9.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_10_zhixian.hide();
+polyline_pn_10_zhixian_jiejue.show();
+}
+else{
+polyline_pn_10_zhixian.show();
+polyline_pn_10_zhixian_jiejue.hide();
+}
+
+polyline_pn_10.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_11_zhixian.hide();
+polyline_pn_11_zhixian_jiejue.show();
+}
+else{
+polyline_pn_11_zhixian.show();
+polyline_pn_11_zhixian_jiejue.hide();
+}
+
+polyline_pn_11.show();
+
+
+if(document.getElementById('jiejue').checked){
+polyline_pn_12_zhixian.hide();
+polyline_pn_12_zhixian_jiejue.show();
+}
+else{
+polyline_pn_12_zhixian.show();
+polyline_pn_12_zhixian_jiejue.hide();
+}
+
+polyline_pn_12.show();
+
+			map.addOverlay(pn_e); 
+			map.addOverlay(pn_s); 
+}
+else{
+
+
+polyline_pn_1.hide();
+
+
+polyline_pn_2_zhixian.hide();
+polyline_pn_2_zhixian_jiejue.hide();
+
+
+polyline_pn_2.hide();
+
+
+polyline_pn_3_zhixian.hide();
+polyline_pn_3_zhixian_jiejue.hide();
+
+
+polyline_pn_3.hide();
+
+
+polyline_pn_4_zhixian.hide();
+polyline_pn_4_zhixian_jiejue.hide();
+
+
+polyline_pn_4.hide();
+
+
+polyline_pn_5_zhixian.hide();
+polyline_pn_5_zhixian_jiejue.hide();
+
+
+polyline_pn_5.hide();
+
+
+polyline_pn_6_zhixian.hide();
+polyline_pn_6_zhixian_jiejue.hide();
+
+
+polyline_pn_6.hide();
+
+
+polyline_pn_7_zhixian.hide();
+polyline_pn_7_zhixian_jiejue.hide();
+
+
+polyline_pn_7.hide();
+
+
+polyline_pn_8_zhixian.hide();
+polyline_pn_8_zhixian_jiejue.hide();
+
+
+polyline_pn_8.hide();
+
+
+polyline_pn_9_zhixian.hide();
+polyline_pn_9_zhixian_jiejue.hide();
+
+
+polyline_pn_9.hide();
+
+
+polyline_pn_10_zhixian.hide();
+polyline_pn_10_zhixian_jiejue.hide();
+
+
+polyline_pn_10.hide();
+
+
+polyline_pn_11_zhixian.hide();
+polyline_pn_11_zhixian_jiejue.hide();
+
+
+polyline_pn_11.hide();
+
+
+polyline_pn_12_zhixian.hide();
+polyline_pn_12_zhixian_jiejue.hide();
+
+
+polyline_pn_12.hide();
+
+			map.removeOverlay(pn_e); 
+			map.removeOverlay(pn_s); 
+}
+
+}
+
+
+  </script>
+  </html>
+
+  
+  
